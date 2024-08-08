@@ -1,4 +1,3 @@
-// google-translate.js
 const puppeteer = require('puppeteer');
 
 const translateText = async (text) => {
@@ -11,15 +10,20 @@ const translateText = async (text) => {
   const url = `https://translate.google.com/?sl=en&tl=zh-CN&text=${encodeURIComponent(text)}&op=translate`;
   await page.goto(url);
 
-  // 等待翻译结果出现
-  await page.waitForSelector('span[jsname="W297wb"]'); // 选择器可能需要根据实际情况调整
+  try {
+    // 等待翻译结果出现
+    await page.waitForSelector('span[jsname="W297wb"]', {
+      timeout: 60000
+    }); // 增加超时时间
 
-  const translatedText = await page.$eval('span[jsname="W297wb"]', el => el.innerText);
-
-  await browser.close();
-
-  console.log('translatedText', translatedText);
-  return translatedText; // 返回翻译后的文本
+    const translatedText = await page.$eval('span[jsname="W297wb"]', el => el.innerText);
+    await browser.close();
+    return translatedText; // 返回翻译后的文本
+  } catch (error) {
+    console.error(`翻译出错: ${error.message}`);
+    await browser.close();
+    return text; // 如果翻译失败，返回原文
+  }
 };
 
 module.exports = {

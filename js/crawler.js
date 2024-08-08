@@ -35,6 +35,7 @@ async function crawlCompaniesHouse(url) {
 
     // 遍历表格行
     let parentCode = '';
+
     for (let index = 0; index < rows.length; index++) {
       const row = rows[index];
       const cols = $(row).find('td'); // 查找当前行中的所有单元格
@@ -45,13 +46,34 @@ async function crawlCompaniesHouse(url) {
 
       if (rowData.length > 0) { // 确保行中有数据
         if (rowData[0]?.startsWith('Section')) {
-          parentCode = rowData[0];
+          parentCode = rowData[0]; // 更新父级代码
         }
 
-        // 使用 google-translate.js 中的 translateText 函数翻译Description的数据
-        const translatedDescription = await translateText(rowData[1]);
-        // 将 Code 和 Description 与翻译后的文本组合
-        data.push([rowData[0], parentCode, rowData[1], translatedDescription]); // 假设 Code 是第一列，Description 是第二列
+        data.push([rowData[0], parentCode, rowData[1], '']); // 先将原始数据添加到 data 中
+      }
+    }
+
+    console.log('提取到数据size=' + data.length);
+
+    // 定义分批大小
+    const batchSize = 5; // 每批翻译 5 个描述
+
+    // 批量翻译描述
+    for (let i = 1; i < data.length; i += batchSize) { // 从第一行开始，跳过标题行
+      console.log(`正在翻译第 ${i} 到 ${i + batchSize - 1} 个描述...`);
+      const batch = data.slice(i, i + batchSize); // 获取当前批次的描述
+
+      // 使用 Promise.all 并行翻译当前批次的描述
+      const translations = await Promise.all(
+        batch.map(async (item) => {
+          const translatedDescription = await translateText(item[2]); // item[2] 是 Description
+          return translatedDescription;
+        })
+      );
+
+      // 将翻译结果添加到原始数据中
+      for (let j = 0; j < translations.length; j++) {
+        data[i + j][3] = translations[j]; // 将翻译结果填入对应的行
       }
     }
 
