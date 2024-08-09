@@ -56,7 +56,7 @@ async function crawlCompaniesHouse(url) {
     console.log('提取到数据size=' + data.length);
 
     // 定义分批大小
-    const batchSize = 5; // 每批翻译 5 个描述
+    const batchSize = 3; // 每批翻译 5 个描述
 
     // 批量翻译描述
     for (let i = 1; i < data.length; i += batchSize) { // 从第一行开始，跳过标题行
@@ -89,7 +89,7 @@ async function crawlCompaniesHouse(url) {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'SIC Codes'); // 将工作表添加到工作簿
 
     // 写入 Excel 文件
-    const fileName = 'exportFile/crawlCompaniesHouse.xlsx'; // 修改文件名以区分
+    const fileName = `exportFile/crawlCompaniesHouse-${new Date().toISOString().replace(/[:.-]/g, '')}.xlsx`; // 修改文件名以区分
     XLSX.writeFile(workbook, fileName);
     console.log(`数据已成功导出到 ${fileName}`);
 
