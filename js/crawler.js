@@ -3,7 +3,7 @@ const cheerio = require('cheerio');
 const XLSX = require('xlsx');
 const {
   translateText
-} = require('./google-translate'); // 引入翻译功能
+} = require('./baidu-translate'); // 引入翻译功能
 
 async function crawlCompaniesHouse(url) {
   try {
