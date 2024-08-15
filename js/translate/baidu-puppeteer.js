@@ -9,6 +9,7 @@ const translateText = async (text) => {
     executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', // 指定 Chrome 浏览器路径
     headless: true // 是否以无头模式运行
   });
+  
   const page = await browser.newPage();
 
   // 使用百度翻译的 URL

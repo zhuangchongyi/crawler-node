@@ -3,9 +3,9 @@ const cheerio = require('cheerio');
 const XLSX = require('xlsx');
 const {
   translateText
-} = require('./baidu-translate'); // 引入翻译功能
+} = require('./translate/baidu-puppeteer'); // 引入翻译功能
 
-async function crawlCompaniesHouse(url) {
+async function crawlCompaniesSIC(url) {
   try {
     // 发起 GET 请求
     const response = await axios.get(url);
@@ -89,7 +89,7 @@ async function crawlCompaniesHouse(url) {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'SIC Codes'); // 将工作表添加到工作簿
 
     // 写入 Excel 文件
-    const fileName = `exportFile/crawlCompaniesHouse-${new Date().toISOString().replace(/[:.-]/g, '')}.xlsx`; // 修改文件名以区分
+    const fileName = `exportFile/crawlCompaniesSIC-${new Date().toISOString().replace(/[:.-]/g, '')}.xlsx`; // 修改文件名以区分
     XLSX.writeFile(workbook, fileName);
     console.log(`数据已成功导出到 ${fileName}`);
 
@@ -100,4 +100,4 @@ async function crawlCompaniesHouse(url) {
 
 // 调用爬虫函数
 const urlToCrawl = 'https://resources.companieshouse.gov.uk/sic/'; // 替换为需要爬取的 URL
-crawlCompaniesHouse(urlToCrawl);
+crawlCompaniesSIC(urlToCrawl);

@@ -9,7 +9,7 @@
       "request": "launch",
       "name": "启动主程序",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}\\main.js",
+      "program": "${workspaceFolder}\\js\\transformSingaporeSIC.js",
       "args": ["js/crawler.js"] // 传递要运行的具体文件
     }
   ]

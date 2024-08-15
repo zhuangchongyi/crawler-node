@@ -9,6 +9,7 @@ const translateText = async (text) => {
     executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', // 指定 Chrome 浏览器路径
     headless: true // 是否以无头模式运行
   });
+  
   const page = await browser.newPage();
 
   const url = `https://translate.google.com/?sl=en&tl=zh-CN&text=${encodeURIComponent(text)}&op=translate`;
@@ -35,17 +36,22 @@ const translateText = async (text) => {
       if (translatedText && translatedText.trim() !== "") {
         break; // 如果成功获取到翻译结果，跳出循环
       }
+      
     } catch (error) {
       attempts++;
       console.error(`第 ${attempts} 次尝试失败: ${error.message}`);
+
+      // 刷新重新打开  
+      await page.reload();
       await wait(1000); // 等待1秒再重试
+      await page.goto(url);
     }
   }
 
   await browser.close();
 
   if (translatedText) {
-    return translatedText; // 返回翻译后的文本
+    return translatedText.trim(); // 返回翻译后的文本
   } else {
     console.error(`翻译失败，返回原文: ${text}`);
     return ''; // 如果所有尝试都失败，返回原文
