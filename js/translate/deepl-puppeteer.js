@@ -12,8 +12,12 @@ const translateText = async (text) => {
 
   const page = await browser.newPage();
 
-  const url = `https://translate.google.com/?sl=en&tl=zh-CN&text=${encodeURIComponent(text)}&op=translate`;
-  await page.goto(url);
+  // 使用 DeepL 翻译的 URL
+  const url = `https://www.deepl.com/translator#en/zh-hans/${encodeURIComponent(text)}`;
+
+  await page.goto(url, {
+    waitUntil: 'networkidle2'
+  }); // 等待网络空闲状态
 
   const maxRetries = 3; // 最大重试次数
   let attempts = 0;
@@ -24,14 +28,15 @@ const translateText = async (text) => {
   while (attempts < maxRetries) {
     try {
       // 等待翻译结果出现
-      await page.waitForSelector('span[jsname="W297wb"]', {
-        timeout: 60000
+      await page.waitForSelector('.translation', { // DeepL 翻译结果的选择器
+        timeout: 30000
       });
 
       // 增加额外的等待时间，以确保翻译完成
       await wait(1000); // 等待1秒
 
-      translatedText = await page.$eval('span[jsname="W297wb"]', el => el.innerText);
+      // 获取翻译结果
+      translatedText = await page.$eval('.translation', el => el.innerText); // 选择器针对翻译结果
 
       if (translatedText && translatedText.trim() !== "") {
         break; // 如果成功获取到翻译结果，跳出循环
@@ -39,7 +44,7 @@ const translateText = async (text) => {
 
     } catch (error) {
       attempts++;
-      console.error(`第 ${attempts} 次尝试失败: ${error.message}`);
+      console.error(`第 ${attempts} 次尝试失败: ${error.message}，原文: ${text}`);
 
       try {
         // 刷新重新打开  
@@ -49,7 +54,6 @@ const translateText = async (text) => {
       } catch (error) {
         console.error(error);
       }
-
     }
   }
 
@@ -57,7 +61,7 @@ const translateText = async (text) => {
 
   if (translatedText) {
     console.log(`译文：${translatedText}，原文: ${text}`);
-    return translatedText.trim(); // 返回翻译后的文本
+    return translatedText; // 返回翻译后的文本
   } else {
     console.error(`翻译失败，返回原文: ${text}`);
     return ''; // 如果所有尝试都失败，返回原文

@@ -1,7 +1,7 @@
 const xlsx = require('xlsx');
 const {
   translateText
-} = require('./translate/google-puppeteer'); // 引入翻译功能
+} = require('./translate/baidu-puppeteer'); // 引入翻译功能
 
 
 async function transformSingaporeSIC(path) {
@@ -28,12 +28,12 @@ async function transformSingaporeSIC(path) {
     return;
   }
 
+  // 添加 pValue 字段
   let pValue = null
   data.forEach((row) => {
-    row.value = row.value.trim()
-    row.valueE = row.valueE.trim()
+    row.value = row.value?.trim()
+    row.valueE = row.valueE?.trim()
     if (row.value.length == 1) {
-      row.pValue = 0
       pValue = row.value
     } else if (row.value.length == 2) {
       row.pValue = pValue
@@ -47,7 +47,7 @@ async function transformSingaporeSIC(path) {
   })
 
   // 定义分批大小
-  const batchSize = 3; // 每批翻译 5 个描述
+  const batchSize = 2; // 每批翻译 5 个描述
 
   // 批量翻译描述
   for (let i = 1; i < data.length; i += batchSize) { // 从第一行开始，跳过标题行
@@ -64,19 +64,25 @@ async function transformSingaporeSIC(path) {
 
     // 将翻译结果添加到原始数据中
     for (let j = 0; j < translations.length; j++) {
-      data[i + j].title = translations[j]; // 将翻译结果填入对应的行
+      data[i + j].label = translations[j]; // 将翻译结果填入对应的行
     }
   }
 
 
+  // 将 JSON 数据转换为二维数组value,pValue,valueE,label
+  let aoaData = [
+    ['value', 'pValue', 'valueE', 'label'], // 表头
+    ...data.map(item => [item.value, item.pValue, item.valueE, item.label]) // 将每个对象转换为数组
+  ];
+
   // 导出数据到 Excel
-  worksheet = XLSX.utils.aoa_to_sheet(data); // 将数据转换为工作表
-  workbook = XLSX.utils.book_new(); // 创建新工作簿
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Singapore SIC Codes'); // 将工作表添加到工作簿
+  const ws = xlsx.utils.aoa_to_sheet(aoaData); // 将数据转换为工作表
+  const wb = xlsx.utils.book_new(); // 创建新工作簿
+  xlsx.utils.book_append_sheet(wb, ws, 'Singapore SIC Codes'); // 将工作表添加到工作簿
 
   // 写入 Excel 文件
   const fileName = `exportFile/ssic2020-classification-structure-${new Date().toISOString().replace(/[:.-]/g, '')}.xlsx`; // 修改文件名以区分
-  XLSX.writeFile(workbook, fileName);
+  xlsx.writeFile(wb, fileName);
   console.log(`数据已成功导出到 ${fileName}`);
 
 }

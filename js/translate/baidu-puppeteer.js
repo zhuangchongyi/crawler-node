@@ -9,7 +9,7 @@ const translateText = async (text) => {
     executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', // 指定 Chrome 浏览器路径
     headless: true // 是否以无头模式运行
   });
-  
+
   const page = await browser.newPage();
 
   // 使用百度翻译的 URL
@@ -45,11 +45,15 @@ const translateText = async (text) => {
     } catch (error) {
       attempts++;
       console.error(`第 ${attempts} 次尝试失败: ${error.message}，原文: ${text}`);
-      
-      // 刷新重新打开  
-      await page.reload();
-      await wait(1000); // 等待1秒再重试
-      await page.goto(url);
+
+      try {
+        // 刷新重新打开  
+        await page.reload();
+        await wait(1000); // 等待1秒再重试
+        await page.goto(url);
+      } catch (error) {
+        console.error(error);
+      }
 
     }
   }
